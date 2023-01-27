@@ -1,6 +1,6 @@
 namespace Hotels.Data;
 
-public class HotelRepository : IHotelRepository
+public sealed class HotelRepository : IHotelRepository
 {
     private readonly HotelDb _context;
 
@@ -11,8 +11,11 @@ public class HotelRepository : IHotelRepository
 
     public Task<List<Hotel>> GetHotelsAsync() => _context.Hotels.ToListAsync();
 
-    public  async Task<Hotel?> GetHotelAsync(int hotelId) => 
-         await _context.Hotels.FindAsync(hotelId);
+    public Task<List<Hotel>> GetHotelsAsync(string name) =>
+        _context.Hotels.Where(h => h.Name.Contains(name)).ToListAsync();
+
+    public async Task<Hotel?> GetHotelAsync(int hotelId) =>
+        await _context.Hotels.FindAsync(hotelId);
 
     public async Task InsertHotelAsync(Hotel hotel) =>
         await _context.Hotels.AddAsync(hotel);
@@ -47,7 +50,7 @@ public class HotelRepository : IHotelRepository
 
     private bool _disposed = false;
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!_disposed)
         {
@@ -59,6 +62,7 @@ public class HotelRepository : IHotelRepository
 
         _disposed = true;
     }
+
     public void Dispose()
     {
         Dispose(true);
