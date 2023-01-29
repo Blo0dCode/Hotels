@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<HotelDb>(options =>
+builder.Services.AddDbContext<HotelDbContext>(options =>
 {
     options.UseSqlite(builder.Configuration.GetConnectionString("Sqlite"));
 });
@@ -18,52 +18,52 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
     using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<HotelDb>();
+    var db = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
     db.Database.EnsureCreated();
 }
 
 app.MapGet("/hotels", async (IHotelRepository repository) =>
         Results.Extensions.Xml(await repository.GetHotelsAsync()))
-    .Produces<List<Hotel>>()
+    .Produces<List<HotelDto>>()
     .WithName("GetAllHotels")
     .WithTags("Getters");
 
 app.MapGet("/hotels/search/name/{query}",
         async (string query, IHotelRepository repository) =>
-            await repository.GetHotelsAsync(query) is IEnumerable<Hotel> hotels
+            await repository.GetHotelsAsync(query) is IEnumerable<HotelDto> hotels
                 ? Results.Ok(hotels)
-                : Results.NotFound(Array.Empty<Hotel>()))
-    .Produces<List<Hotel>>()
+                : Results.NotFound(Array.Empty<HotelDto>()))
+    .Produces<List<HotelDto>>()
     .Produces(StatusCodes.Status404NotFound)
     .WithName("SearchHotels")
     .WithTags("Getters")
     .ExcludeFromDescription();
 
 app.MapGet("/hotels/{id}", async (int id, IHotelRepository repository) =>
-        await repository.GetHotelAsync(id) is Hotel hotel
+        await repository.GetHotelAsync(id) is HotelDto hotel
             ? Results.Ok(hotel)
             : Results.NotFound())
-    .Produces<Hotel>()
+    .Produces<HotelDto>()
     .WithName("GetHotel")
     .WithTags("Getters");
 
-app.MapPost("/hotels", async (Hotel? hotel, IHotelRepository repository) =>
+app.MapPost("/hotels", async (HotelDto? hotel, IHotelRepository repository) =>
     {
         await repository.InsertHotelAsync(hotel);
         await repository.SaveAsync();
         return Results.Created($"/hotels/{hotel.Id}", hotel);
     })
-    .Accepts<Hotel>("application/json")
-    .Produces<Hotel>(StatusCodes.Status201Created)
+    .Accepts<HotelDto>("application/json")
+    .Produces<HotelDto>(StatusCodes.Status201Created)
     .WithName("CreateHotel")
     .WithTags("Creators");
 
-app.MapPut("/hotels", async (Hotel hotel, IHotelRepository repository) =>
+app.MapPut("/hotels", async (HotelDto hotel, IHotelRepository repository) =>
     {
         await repository.UpdateHotelAsync(hotel);
         await repository.SaveAsync();
     })
-    .Accepts<Hotel>("application/json")
+    .Accepts<HotelDto>("application/json")
     .WithName("UpdateHotel")
     .WithTags("Updaters");
 

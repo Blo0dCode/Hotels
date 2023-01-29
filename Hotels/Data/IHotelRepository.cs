@@ -2,11 +2,11 @@ namespace Hotels.Data;
 
 public interface IHotelRepository : IDisposable
 {
-    Task<List<Hotel>> GetHotelsAsync();
-    Task<List<Hotel>> GetHotelsAsync(string name);
-    Task<Hotel?> GetHotelAsync(int hotelId);
-    Task InsertHotelAsync(Hotel hotel);
-    Task UpdateHotelAsync(Hotel hotel);
+    Task<List<HotelDto>> GetHotelsAsync();
+    Task<List<HotelDto>> GetHotelsAsync(string name);
+    Task<HotelDto?> GetHotelAsync(int hotelId);
+    Task InsertHotelAsync(HotelDto hotelDto);
+    Task UpdateHotelAsync(HotelDto hotelDto);
     Task DeleteHotelAsync(int hotelId);
     Task SaveAsync();
 }

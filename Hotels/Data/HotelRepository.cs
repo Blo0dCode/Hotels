@@ -2,50 +2,50 @@ namespace Hotels.Data;
 
 public class HotelRepository : IHotelRepository
 {
-    private readonly HotelDb _context;
+    private readonly HotelDbContext _hotelDb;
 
-    public HotelRepository(HotelDb context)
+    public HotelRepository(HotelDbContext hotelDb)
     {
-        _context = context;
+        _hotelDb = hotelDb;
     }
 
-    public Task<List<Hotel>> GetHotelsAsync() => _context.Hotels.ToListAsync();
+    public Task<List<HotelDto>> GetHotelsAsync() => _hotelDb.Hotels.ToListAsync();
 
-    public Task<List<Hotel>> GetHotelsAsync(string name) =>
-        _context.Hotels.Where(h => h.Name.Contains(name)).ToListAsync();
+    public Task<List<HotelDto>> GetHotelsAsync(string name) =>
+        _hotelDb.Hotels.Where(h => h.Name.Contains(name)).ToListAsync();
 
-    public async Task<Hotel?> GetHotelAsync(int hotelId) =>
-        await _context.Hotels.FindAsync(hotelId);
+    public async Task<HotelDto?> GetHotelAsync(int hotelId) =>
+        await _hotelDb.Hotels.FindAsync(hotelId);
 
-    public async Task InsertHotelAsync(Hotel hotel) =>
-        await _context.Hotels.AddAsync(hotel);
+    public async Task InsertHotelAsync(HotelDto hotelDto) =>
+        await _hotelDb.Hotels.AddAsync(hotelDto);
 
-    public async Task UpdateHotelAsync(Hotel hotel)
+    public async Task UpdateHotelAsync(HotelDto hotelDto)
     {
-        var hotelFromDb = await _context.Hotels.FindAsync(hotel.Id);
+        var hotelFromDb = await _hotelDb.Hotels.FindAsync(hotelDto.Id);
         if (hotelFromDb == null)
         {
             return;
         }
 
-        hotelFromDb.Latitude = hotel.Latitude;
-        hotelFromDb.Longitude = hotel.Longitude;
-        hotelFromDb.Name = hotel.Name;
+        hotelFromDb.Latitude = hotelDto.Latitude;
+        hotelFromDb.Longitude = hotelDto.Longitude;
+        hotelFromDb.Name = hotelDto.Name;
     }
 
     public async Task DeleteHotelAsync(int hotelId)
     {
-        var hotelFromDb = await _context.Hotels.FindAsync(hotelId);
+        var hotelFromDb = await _hotelDb.Hotels.FindAsync(hotelId);
         if (hotelFromDb == null)
         {
             return;
         }
 
-        _context.Hotels.Remove(hotelFromDb);
+        _hotelDb.Hotels.Remove(hotelFromDb);
     }
 
     public async Task SaveAsync() =>
-        await _context.SaveChangesAsync();
+        await _hotelDb.SaveChangesAsync();
 
 
     private bool _disposed = false;
@@ -56,7 +56,7 @@ public class HotelRepository : IHotelRepository
         {
             if (disposing)
             {
-                _context.Dispose();
+                _hotelDb.Dispose();
             }
         }
 
