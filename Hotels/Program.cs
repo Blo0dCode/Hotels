@@ -1,3 +1,4 @@
+using Hotels;
 using Hotels.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,16 +23,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGet("/hotels", async (IHotelRepository repository) =>
-        Results.Ok(await repository.GetHotelsAsync()))
+        Results.Extensions.Xml(await repository.GetHotelsAsync()))
     .Produces<List<Hotel>>()
     .WithName("GetAllHotels")
     .WithTags("Getters");
 
 app.MapGet("/hotels/search/name/{query}",
-    async (string query, IHotelRepository repository) =>
-        await repository.GetHotelsAsync(query) is IEnumerable<Hotel> hotels
-    ? Results.Ok(hotels)
-    : Results.NotFound(Array.Empty<Hotel>()))
+        async (string query, IHotelRepository repository) =>
+            await repository.GetHotelsAsync(query) is IEnumerable<Hotel> hotels
+                ? Results.Ok(hotels)
+                : Results.NotFound(Array.Empty<Hotel>()))
     .Produces<List<Hotel>>()
     .Produces(StatusCodes.Status404NotFound)
     .WithName("SearchHotels")
@@ -39,7 +40,7 @@ app.MapGet("/hotels/search/name/{query}",
     .ExcludeFromDescription();
 
 app.MapGet("/hotels/{id}", async (int id, IHotelRepository repository) =>
-        Results.Ok(await repository.GetHotelAsync(id)) is Hotel hotel
+        await repository.GetHotelAsync(id) is Hotel hotel
             ? Results.Ok(hotel)
             : Results.NotFound())
     .Produces<Hotel>()
@@ -47,30 +48,30 @@ app.MapGet("/hotels/{id}", async (int id, IHotelRepository repository) =>
     .WithTags("Getters");
 
 app.MapPost("/hotels", async (Hotel? hotel, IHotelRepository repository) =>
-{
-    await repository.InsertHotelAsync(hotel);
-    await repository.SaveAsync();
-    return Results.Created($"/hotels/{hotel.Id}", hotel);
-})
+    {
+        await repository.InsertHotelAsync(hotel);
+        await repository.SaveAsync();
+        return Results.Created($"/hotels/{hotel.Id}", hotel);
+    })
     .Accepts<Hotel>("application/json")
     .Produces<Hotel>(StatusCodes.Status201Created)
     .WithName("CreateHotel")
     .WithTags("Creators");
 
 app.MapPut("/hotels", async (Hotel hotel, IHotelRepository repository) =>
-{
-    await repository.UpdateHotelAsync(hotel);
-    await repository.SaveAsync();
-})
+    {
+        await repository.UpdateHotelAsync(hotel);
+        await repository.SaveAsync();
+    })
     .Accepts<Hotel>("application/json")
     .WithName("UpdateHotel")
     .WithTags("Updaters");
 
 app.MapDelete("/hotels/{id}", async (int id, IHotelRepository repository) =>
-{
-    await repository.DeleteHotelAsync(id);
-    await repository.SaveAsync();
-})
+    {
+        await repository.DeleteHotelAsync(id);
+        await repository.SaveAsync();
+    })
     .WithName("DeleteHotel")
     .WithTags("Deleters");
 

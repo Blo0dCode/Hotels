@@ -1,6 +1,6 @@
 namespace Hotels.Data;
 
-public sealed class HotelRepository : IHotelRepository
+public class HotelRepository : IHotelRepository
 {
     private readonly HotelDb _context;
 
@@ -50,7 +50,7 @@ public sealed class HotelRepository : IHotelRepository
 
     private bool _disposed = false;
 
-    private void Dispose(bool disposing)
+    protected virtual void Dispose(bool disposing)
     {
         if (!_disposed)
         {
