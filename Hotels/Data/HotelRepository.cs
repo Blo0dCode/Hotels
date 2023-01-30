@@ -14,6 +14,15 @@ public class HotelRepository : IHotelRepository
     public Task<List<HotelDto>> GetHotelsAsync(string name) =>
         _hotelDb.Hotels.Where(h => h.Name.Contains(name)).ToListAsync();
 
+    public async Task<List<HotelDto>> GetHotelsAsync(Coordinate coordinate) =>
+        await _hotelDb.Hotels.Where(hotel =>
+                hotel.Latitude > coordinate.Latitude - 1 &&
+                hotel.Latitude < coordinate.Latitude + 1 &&
+                hotel.Longitude > coordinate.Longitude - 1 &&
+                hotel.Longitude < coordinate.Longitude + 1)
+            .ToListAsync();
+
+
     public async Task<HotelDto?> GetHotelAsync(int hotelId) =>
         await _hotelDb.Hotels.FindAsync(hotelId);
 
