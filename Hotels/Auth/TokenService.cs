@@ -1,9 +1,17 @@
+using Hotels.Options;
+using Microsoft.Extensions.Options;
+
 namespace Hotels.Auth;
 
 public class TokenService : ITokenService
 {
-    private TimeSpan ExpiryDuration = new TimeSpan(0, 30, 0);
-    public string BuildToken(string key, string issuer, UserDto user)
+    private readonly JwtOptions _jwtOptions;
+    public TokenService(IOptions<JwtOptions> jwtOptions)
+    {
+        _jwtOptions = jwtOptions.Value;
+    }
+    
+    public string BuildToken(UserDto user)
     {
         var claims = new[]
         {
@@ -11,11 +19,11 @@ public class TokenService : ITokenService
             new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())
         };
 
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
         var credentials = new SigningCredentials(securityKey,
             SecurityAlgorithms.HmacSha256Signature);
-        var tokenDescriptor = new JwtSecurityToken(issuer, issuer, claims,
-            expires: DateTime.Now.Add(ExpiryDuration), signingCredentials: credentials);
+        var tokenDescriptor = new JwtSecurityToken(_jwtOptions.Issuer, _jwtOptions.Audience, claims,
+            expires: DateTime.Now.Add(_jwtOptions.ExpiryDuration), signingCredentials: credentials);
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
     }
 }

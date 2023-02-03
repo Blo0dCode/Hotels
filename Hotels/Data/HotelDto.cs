@@ -3,7 +3,7 @@ namespace Hotels.Data;
 public class HotelDto
 {
     public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
+    [Required] public string Name { get; set; } = null!;
     public double Latitude { get; set; }
     public double Longitude { get; set; }
 }

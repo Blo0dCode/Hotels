@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.WebUtilities;
+
 namespace Hotels;
 
 public class XmlResult<T> : IResult
@@ -6,12 +8,18 @@ public class XmlResult<T> : IResult
     private readonly T _result;
     public XmlResult(T result) => _result = result;
 
-    public Task ExecuteAsync(HttpContext httpContext)
+    public async Task ExecuteAsync(HttpContext httpContext)
     {
-        using var ms = new MemoryStream();
-        XmlSerializer.Serialize(ms, _result);
+        using var fbws = new FileBufferingWriteStream();//MemoryStream
+        XmlSerializer.Serialize(fbws, _result);
         httpContext.Response.ContentType = "application/xml";
-        return ms.CopyToAsync(httpContext.Response.Body);
+        await fbws.DrainBufferAsync(httpContext.Response.Body);//CopyToAsync
+        
+/*
+        var stream = new MemoryStream();
+        XmlSerializer.Serialize(stream, _result);
+        stream.Flush();
+        var s = Encoding.ASCII.GetString(stream.ToArray());*/
     }
 }
 

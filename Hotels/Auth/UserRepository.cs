@@ -2,15 +2,14 @@ namespace Hotels.Auth;
 
 public class UserRepository : IUserRepository
 {
-    private List<UserDto> _users => new()
+    private static List<UserDto> Users => new()
     {
         new UserDto("Vadim", "123"),
         new UserDto("Andrey", "123")
     };
 
-    public UserDto GetUser(UserModel userModel) =>
-        _users.FirstOrDefault(u =>
-            string.Equals(u.UserName, userModel.UserName) &&
-            string.Equals(u.Password, userModel.Password)) ??
-        throw new Exception();
+    public UserDto? GetUser(UserModel userModel) =>
+        Users.FirstOrDefault(u =>
+            u.UserName == userModel.UserName &&
+            u.Password == userModel.Password);
 }
