@@ -16,13 +16,13 @@ foreach (var api in apis)
     if (api is null) throw new InvalidProgramException("Api not found");
     api.Register(app);
 }
+
 Configure(app);
 
 app.Run();
 
 void RegisterServices(IServiceCollection services)
 {
-    var serviceProvider = builder.Services.BuildServiceProvider();
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen();
     services.AddDbContext<HotelDbContext>(options =>
@@ -30,28 +30,15 @@ void RegisterServices(IServiceCollection services)
         options.UseSqlite(builder.Configuration.GetConnectionString("Sqlite"));
     });
 
-    services.Configure<JwtOptions>(builder.Configuration.GetSection(nameof(JwtOptions)));
-    
+    services.AddOptions<JwtOptions>().Bind(builder.Configuration.GetSection(nameof(JwtOptions)));
+
     services.AddScoped<IHotelRepository, HotelRepository>();
     services.AddSingleton<ITokenService, TokenService>();
     services.AddSingleton<IUserRepository, UserRepository>();
     services.AddAuthorization();
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
-        {
-            var keyJwtOptions = serviceProvider.GetRequiredService<IOptions<JwtOptions>>().Value;
-            options.TokenValidationParameters = new()
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = keyJwtOptions.Issuer,
-                ValidAudience = keyJwtOptions.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(keyJwtOptions.Key))
-            };
-        });
+        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, (_) => { });
+    services.AddTransient<IConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>();
     services.AddTransient<IApi, HotelApi>();
     services.AddTransient<IApi, AuthApi>();
 }
@@ -60,7 +47,7 @@ void Configure(WebApplication app)
 {
     app.UseAuthentication();
     app.UseAuthorization();
-    
+
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
@@ -69,5 +56,6 @@ void Configure(WebApplication app)
         var db = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
         db.Database.EnsureCreated();
     }
+
     app.UseHttpsRedirection();
 }

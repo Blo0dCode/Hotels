@@ -2,8 +2,8 @@ namespace Hotels.Options;
 
 public class JwtOptions
 {
-    [Required] public string Key { get; set; } = null!;
-    [Required] public string Issuer { get; set; } = null!;
-    [Required] public string Audience { get; set; } = null!;
-    [Required] public TimeSpan ExpiryDuration { get; set; }
+    public string Key { get; init; } = null!;
+    public string Issuer { get; init; } = null!;
+    public string Audience { get; init; } = null!;
+    public TimeSpan ExpiryDuration { get; init; }
 }
